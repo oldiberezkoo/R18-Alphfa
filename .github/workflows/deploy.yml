@@ -50,13 +50,19 @@ jobs:
           git commit -m "Deploy: Build contents $(date '+%Y-%m-%d %H:%M:%S')"
           git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:build
 
+      - name: Setup GitHub CLI
+        run: |
+          type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
+          curl -fsSL https://cli.github.com/packages/githubcli-archive.key | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.asc \
+          && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.asc \
+          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.asc] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+          && sudo apt update \
+          && sudo apt install gh -y
+
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: build
-          publish_dir: ./
-          force_orphan: true
+        run: |
+          gh auth status
+          gh repo deploy-pages --branch build
 
       - name: Set Website URL
         uses: actions/github-script@v7
@@ -76,6 +82,6 @@ jobs:
               process.exit(1)
             }
 
-      - name: Finish
+      - name: Set Repository Homepage
         run: |
-          echo "Deployed to https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          gh repo edit --homepage "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
