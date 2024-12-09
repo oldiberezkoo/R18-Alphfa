@@ -70,4 +70,8 @@ jobs:
         if: github.ref == 'refs/heads/build'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: /
+          publish_dir: ./
+
+      - name: Finish
+        run: |
+          echo "Deployed to https://${{ github.repository_owner }}.github.io/${{ github.repository }}"
