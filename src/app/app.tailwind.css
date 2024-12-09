@@ -10,5 +10,6 @@
 	#root {
 		@apply h-full w-full;
 		font-family: "Onest", sans-serif;
+		@apply text-black;
 	}
 }
