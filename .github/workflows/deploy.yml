@@ -19,51 +19,42 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      # Шаг 1: Checkout репозитория
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Шаг 2: Настройка Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
 
-      # Шаг 3: Установка зависимостей
       - name: Install Dependencies
         run: |
           npm i
           npm cache verify
 
-      # Шаг 4: Сборка проекта
       - name: Build Project
         run: npm run build || exit 1
 
-      # Шаг 5: Удаление старых файлов
       - name: Remove old files
         run: |
           find . -mindepth 1 \( -name '.git' -o -name 'dist' \) -prune -o -exec rm -rf {} + || true
 
-      # Шаг 6: Копирование файлов из dist в текущую директорию
       - name: Copy files from dist to current directory
         run: |
           mv dist/* ./
           rm -rf dist
 
-      # Шаг 7: Загрузка артефактов
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: "."
 
-      # Шаг 8: Деплой на GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Шаг 9: Завершение деплоя
       - name: Finish Deployment
         run: |
           echo "Deployed to https://${{ github.repository_owner }}.github.io/${{ github.repository }}"
