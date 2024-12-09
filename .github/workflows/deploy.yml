@@ -45,23 +45,31 @@ jobs:
           git commit -m "Deploy: Build contents $(date '+%Y-%m-%d %H:%M:%S')"
           git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:build
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Enable GitHub Pages
+        uses: actions/github-script@v6
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          user_name: "github-actions[bot]"
-          user_email: "github-actions[bot]@users.noreply.github.com"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.repos.createPagesSite({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              source: {
+                branch: 'build',
+                path: '/'
+              }
+            })
 
       - name: Set Repository Website URL
-        run: |
-          curl -L \
-            -X PATCH \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/${{ github.repository }} \
-            -d '{"homepage":"https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"}'\
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pageUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}`
+            github.rest.repos.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              homepage: pageUrl
+            })
 
       - name: Finish
         run: |
