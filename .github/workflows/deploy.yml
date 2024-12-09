@@ -50,32 +50,20 @@ jobs:
           git commit -m "Deploy: Build contents $(date '+%Y-%m-%d %H:%M:%S')"
           git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:build
 
-      - name: Activate GitHub Pages
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup GitHub Pages via API
         run: |
-          gh api -X POST /repos/${{ github.repository }}/pages \
-            -F source[branch]="build" \
-            -F source[path]="/"
+          curl -X PATCH \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -d '{"source":{"branch":"build","path":"/"}}' \
+          https://api.github.com/repos/${{ github.repository }}/pages
 
-      - name: Set Website URL
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            try {
-              const pageUrl = `https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}`
-              await github.rest.repos.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                homepage: pageUrl
-              })
-              console.log(`Successfully set homepage to: ${pageUrl}`)
-            } catch (error) {
-              console.error('Failed to set homepage:', error)
-              process.exit(1)
-            }
-
-      - name: Set Repository Homepage
+      - name: Deploy to GitHub Pages
         run: |
-          gh repo edit --homepage "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add .
+          git commit -m "Deploy: $(date '+%Y-%m-%d %H:%M:%S')"
+          git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:build
+
+
+
