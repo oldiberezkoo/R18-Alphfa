@@ -64,4 +64,6 @@ jobs:
 
       - name: Enable GitHub Pages
         run: |
-          gh repo edit --enable-pages --source build
+          gh api "repos/${{ github.repository }}/pages" -f source=gh-pages
+          gh api -X PUT "repos/${{ github.repository }}/pages" -f cname="${{ github.repository_owner }}.github.io" -F https_enforced=true
+          gh repo edit --homepage "https://${{ github.repository_owner }}.github.io/${{ github.repository }}"
