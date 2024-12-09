@@ -54,16 +54,16 @@ jobs:
         run: |
           curl -X PATCH \
           -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          -d '{"source":{"branch":"build","path":"/"}}' \
-          https://api.github.com/repos/${{ github.repository }}/pages
-
-      - name: Deploy to GitHub Pages
+          -d '{"source": {"branch": "build", "path": "/"}}' \
+          "https://api.github.com/repos/${{ github.repository }}/pages"
+      - name: Commit changes to `build` branch
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           git add .
-          git commit -m "Deploy: $(date '+%Y-%m-%d %H:%M:%S')"
+          git commit -m "Deploy: $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
           git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:build
 
-
-
+      - name: Deploy to GitHub Pages (using gh CLI)
+        run: |
+          gh pages create --source build --branch build --title "GitHub Pages" --silent
