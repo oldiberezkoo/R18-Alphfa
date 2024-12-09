@@ -50,40 +50,20 @@ jobs:
           mv dist/* ./
           rm -rf dist
 
-      # Шаг 7: Деплой на ветку build
-      - name: Deploy to Build Branch
-        if: success()
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git fetch origin build || true
-          git checkout -B build origin/build 2>/dev/null || git checkout -b build
-          git add .
-          git commit -m "Deploy: Build contents $(date '+%Y-%m-%d %H:%M:%S')"
-          git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:build
+      # Шаг 7: Загрузка артефактов
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
 
-      # Шаг 8: Настройка и установка GitHub CLI
-      - name: Setup GitHub CLI
-        run: |
-          sudo apt update
-          sudo apt install -y gnupg
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          sudo apt update
-          sudo apt install -y gh
-
-      # Шаг 9: Аутентификация GitHub CLI
-      - name: Authenticate GitHub CLI
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-
-      # Шаг 10: Деплой на GitHub Pages
+      # Шаг 8: Деплой на GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          path: "."
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Шаг 11: Завершение деплоя
+      # Шаг 9: Завершение деплоя
       - name: Finish Deployment
         run: |
           echo "Deployed to https://${{ github.repository_owner }}.github.io/${{ github.repository }}"
