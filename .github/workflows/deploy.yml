@@ -62,8 +62,12 @@ jobs:
       - name: Authenticate GitHub CLI
         run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
-      - name: Enable GitHub Pages
-        run: |
-          gh api "repos/${{ github.repository }}/pages" -f source=gh-pages
-          gh api -X PUT "repos/${{ github.repository }}/pages" -f cname="${{ github.repository_owner }}.github.io" -F https_enforced=true
-          gh repo edit --homepage "https://${{ github.repository_owner }}.github.io/${{ github.repository }}"
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        # If you're changing the branch from main,
+        # also change the `main` in `refs/heads/main`
+        # below accordingly.
+        if: github.ref == 'refs/heads/build'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: /
