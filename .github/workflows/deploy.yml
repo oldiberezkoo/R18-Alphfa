@@ -49,28 +49,19 @@ jobs:
           git add .
           git commit -m "Deploy: Build contents $(date '+%Y-%m-%d %H:%M:%S')"
           git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:build
+
       - name: Setup GitHub CLI
         run: |
-          type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
-          curl -fsSL https://cli.github.com/packages/githubcli-archive.key | sudo gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg
+          sudo apt update
+          sudo apt install -y gnupg
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
           echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
           sudo apt update
-          sudo apt install gh -y
+          sudo apt install -y gh
 
       - name: Authenticate GitHub CLI
         run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-      - name: Setup GitHub Pages
-        uses: actions/configure-pages@v4
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      - name: Ensure GitHub Pages is Enabled
+      - name: Set Repository Homepage
         run: |
-          # Check if GitHub Pages is enabled, if not, enable it
-          if ! gh repo view ${{ github.repository }} --json hasPages | grep -q 'true'; then
-            gh repo edit ${{ github.repository }} --enable-pages
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          gh repo edit --homepage "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
