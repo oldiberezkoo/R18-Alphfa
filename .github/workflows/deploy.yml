@@ -44,17 +44,6 @@ jobs:
           mv dist/* ./
           rm -rf dist
 
-      - name: Upload artifact for GitHub Pages
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: "."
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Finish Deployment
         run: |
           echo "Deployed to https://${{ github.repository_owner }}.github.io/${{ github.repository }}"
