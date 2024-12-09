@@ -51,8 +51,10 @@ jobs:
           git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:build
 
       - name: Activate GitHub Pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh api -X POST /repos/${{ github.repository }}/pages --silent \
+          gh api -X POST /repos/${{ github.repository }}/pages \
             -F source[branch]="build" \
             -F source[path]="/"
 
